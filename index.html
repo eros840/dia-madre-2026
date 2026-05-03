@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#e91e63">
+<title>Feliz Día de la Madre</title>
+<style>
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #1a0e1f;
+    color: #fff;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a0e1f;
+  }
+  .scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: fade .35s ease both;
+  }
+  .scene.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
+
+  /* Hot-spots: zonas invisibles clickables sobre la imagen.
+     Posicionadas en % para que escalen con el viewport. */
+  .hotspot {
+    position: absolute;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: 14px;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .hotspot:hover { background: rgba(255,255,255,.10); }
+  .hotspot:active { transform: scale(.96); background: rgba(255,255,255,.18); }
+
+  /* Botón "Volver a empezar" en la pantalla final */
+  .restart {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    font-size: clamp(16px, 2.4vw, 22px);
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: #fff;
+    background: linear-gradient(135deg, #e91e63, #9c27b0);
+    border: 0;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 0 4px rgba(255,255,255,.85) inset;
+    cursor: pointer;
+    z-index: 10;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .restart:hover { transform: translateX(-50%) scale(1.04); }
+  .restart:active { transform: translateX(-50%) scale(.97); }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 0 4px rgba(255,255,255,.85) inset, 0 0 0 0 rgba(233,30,99,.6); }
+    50%     { box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 0 4px rgba(255,255,255,.85) inset, 0 0 0 18px rgba(233,30,99,0); }
+  }
+
+  /* Toast de cargando si la imagen no está */
+  .missing {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.2rem; opacity: .7;
+    background: repeating-linear-gradient(45deg, #2b1633, #2b1633 10px, #341a3d 10px, #341a3d 20px);
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- 1. ¿QUÉ QUIERES? — botones REGALO 1 / REGALO 2 -->
+  <div class="scene" id="scene-1" data-img="img/1-pregunta.jpg">
+    <button class="hotspot" data-go="2"
+            style="left:14%;top:62%;width:32%;height:14%;"
+            aria-label="Regalo 1"></button>
+    <button class="hotspot" data-go="4"
+            style="left:54%;top:62%;width:32%;height:14%;"
+            aria-label="Regalo 2"></button>
+  </div>
+
+  <!-- 2. RAMO DE ROSAS — botón CONFIRMAR -->
+  <div class="scene" id="scene-2" data-img="img/2-ramo.jpg">
+    <button class="hotspot" data-go="3"
+            style="left:36%;top:66%;width:28%;height:12%;"
+            aria-label="Confirmar"></button>
+  </div>
+
+  <!-- 3. MENTIRA, ESTE SÍ ES TU REGALO — toda la pantalla pasa al final -->
+  <div class="scene" id="scene-3" data-img="img/3-mentira.jpg">
+    <button class="hotspot" data-go="6"
+            style="left:8%;top:25%;width:84%;height:65%;"
+            aria-label="Continuar"></button>
+  </div>
+
+  <!-- 4. 2 SEMANAS BALNEARIO — botón CONFIRMAR -->
+  <div class="scene" id="scene-4" data-img="img/4-balneario.jpg">
+    <button class="hotspot" data-go="5"
+            style="left:36%;top:70%;width:28%;height:12%;"
+            aria-label="Confirmar"></button>
+  </div>
+
+  <!-- 5. LO SIENTO, PRESUPUESTO — toda la pantalla pasa al final -->
+  <div class="scene" id="scene-5" data-img="img/5-presupuesto.jpg">
+    <button class="hotspot" data-go="6"
+            style="left:8%;top:25%;width:84%;height:65%;"
+            aria-label="Continuar"></button>
+  </div>
+
+  <!-- 6. MIRA EN EL CAJÓN — final con botón Volver a empezar -->
+  <div class="scene" id="scene-6" data-img="img/6-cajon.jpg">
+    <button class="restart" data-go="1">Volver a empezar</button>
+  </div>
+
+</div>
+
+<script>
+  // Asigna background-image a cada escena y detecta si falta el archivo
+  document.querySelectorAll('.scene[data-img]').forEach(el => {
+    const src = el.dataset.img;
+    const probe = new Image();
+    probe.onload  = () => { el.style.backgroundImage = `url("${src}")`; };
+    probe.onerror = () => {
+      const t = document.createElement('div');
+      t.className = 'missing';
+      t.textContent = `Falta: ${src}`;
+      el.appendChild(t);
+    };
+    probe.src = src;
+  });
+
+  // Navegación entre escenas
+  function show(n) {
+    document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+    const next = document.getElementById('scene-' + n);
+    if (next) next.classList.add('active');
+    // Scroll arriba por si en móvil con barra de navegador
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('[data-go]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      show(btn.dataset.go);
+    });
+  });
+
+  // Empieza en la escena 1
+  show(1);
+
+  // Pre-carga el resto de imágenes para que las transiciones sean instantáneas
+  ['img/2-ramo.jpg','img/3-mentira.jpg','img/4-balneario.jpg','img/5-presupuesto.jpg','img/6-cajon.jpg']
+    .forEach(src => { const i = new Image(); i.src = src; });
+</script>
+
+</body>
+</html>
