@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#e91e63">
 <title>Feliz Día de la Madre</title>
 <style>
@@ -20,176 +20,190 @@
     inset: 0;
     background: #1a0e1f;
   }
+
+  /* La escena ocupa toda la pantalla y centra el canvas */
   .scene {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: 0;
     display: none;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center top;
+    align-items: center;
+    justify-content: center;
     animation: fade .35s ease both;
   }
-  .scene.active { display: block; }
-  @keyframes fade { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
+  .scene.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: scale(.99); } to { opacity: 1; transform: scale(1); } }
 
-  /* Hot-spots: ahora visibles con borde glow + animación pulse */
+  /* El canvas tiene SIEMPRE el aspect-ratio de la imagen (1280x904) y nunca se sale del viewport.
+     Los hot-spots van dentro y sus % son relativos a la imagen. */
+  .canvas {
+    position: relative;
+    width: 100vw;
+    height: calc(100vw * 904 / 1280);
+    max-height: 100vh;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  /* Cuando la pantalla es más ancha que la imagen (desktop landscape), limitamos por alto */
+  @media (min-aspect-ratio: 1280/904) {
+    .canvas {
+      height: 100vh;
+      width: calc(100vh * 1280 / 904);
+    }
+  }
+
+  /* Hot-spots: zonas pulsables visibles con borde dashed + halo pulsante */
   .hotspot {
     position: absolute;
     cursor: pointer;
-    background: rgba(255, 255, 255, .12);
-    border: 3px dashed rgba(255, 255, 255, .85);
+    background: rgba(255, 255, 255, .14);
+    border: 3px dashed rgba(255, 255, 255, .9);
     border-radius: 14px;
     transition: background .15s ease, transform .1s ease, border-color .15s ease;
     box-shadow:
-      0 0 0 3px rgba(233, 30, 99, .45),
+      0 0 0 3px rgba(233, 30, 99, .55),
       0 6px 18px rgba(0, 0, 0, .35);
     animation: hotspot-pulse 1.6s ease-in-out infinite;
-  }
-  .hotspot:hover {
-    background: rgba(255, 255, 255, .25);
-    border-color: #fff;
-  }
-  .hotspot:active {
-    transform: scale(.96);
-    background: rgba(255, 255, 255, .35);
-  }
-  @keyframes hotspot-pulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(233, 30, 99, .55), 0 0 0 0 rgba(233, 30, 99, .55), 0 6px 18px rgba(0, 0, 0, .35); }
-    50%      { box-shadow: 0 0 0 3px rgba(233, 30, 99, .55), 0 0 0 14px rgba(233, 30, 99, 0),    0 6px 18px rgba(0, 0, 0, .35); }
-  }
-  /* Etiqueta "Pulsa aquí" centrada en hot-spots invisibles tipo continuar */
-  .hotspot::after {
-    content: attr(data-label);
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: #fff;
     font-weight: 800;
-    font-size: clamp(14px, 2.2vw, 20px);
+    font-size: clamp(12px, 2vw, 18px);
     letter-spacing: 1px;
-    text-shadow: 0 2px 6px rgba(0,0,0,.45);
-    pointer-events: none;
+    text-shadow: 0 2px 6px rgba(0,0,0,.55);
+  }
+  .hotspot:hover  { background: rgba(255,255,255,.28); border-color: #fff; }
+  .hotspot:active { transform: scale(.96); background: rgba(255,255,255,.4); }
+  @keyframes hotspot-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(233,30,99,.55), 0 0 0 0 rgba(233,30,99,.55), 0 6px 18px rgba(0,0,0,.35); }
+    50%      { box-shadow: 0 0 0 3px rgba(233,30,99,.55), 0 0 0 14px rgba(233,30,99,0),    0 6px 18px rgba(0,0,0,.35); }
   }
 
-  /* Botón "Atrás" — pequeño, esquina superior izquierda */
+  /* Botón "Atrás" — fijo arriba a la izquierda, sobre fondo */
   .back {
-    position: absolute;
-    top: 14px;
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
     left: 14px;
     padding: 10px 16px;
-    font-size: clamp(13px, 1.9vw, 16px);
+    font-size: 14px;
     font-weight: 700;
     color: #fff;
-    background: rgba(0, 0, 0, .55);
-    border: 2px solid rgba(255, 255, 255, .85);
+    background: rgba(0, 0, 0, .65);
+    border: 2px solid rgba(255, 255, 255, .9);
     border-radius: 999px;
     cursor: pointer;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    z-index: 20;
+    z-index: 50;
     transition: transform .1s ease, background .15s ease;
   }
-  .back:hover  { background: rgba(0, 0, 0, .7); }
+  .back:hover  { background: rgba(0,0,0,.8); }
   .back:active { transform: scale(.95); }
+  /* Solo visible cuando la escena no es la 1 */
+  body[data-scene="1"] .back { display: none; }
 
-  /* Botón "Volver a empezar" en la pantalla final */
+  /* Botón "Volver a empezar" en la pantalla final, dentro del canvas */
   .restart {
     position: absolute;
     left: 50%;
-    bottom: 6%;
+    bottom: 4%;
     transform: translateX(-50%);
     padding: 14px 28px;
-    font-size: clamp(16px, 2.4vw, 22px);
+    font-size: clamp(15px, 2.2vw, 22px);
     font-weight: 700;
     letter-spacing: .5px;
     color: #fff;
     background: linear-gradient(135deg, #e91e63, #9c27b0);
     border: 0;
     border-radius: 999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .35), 0 0 0 4px rgba(255, 255, 255, .85) inset;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4), 0 0 0 4px rgba(255,255,255,.85) inset;
     cursor: pointer;
     z-index: 10;
     animation: restart-pulse 1.6s ease-in-out infinite;
+    white-space: nowrap;
   }
   .restart:hover  { transform: translateX(-50%) scale(1.04); }
   .restart:active { transform: translateX(-50%) scale(.97); }
   @keyframes restart-pulse {
-    0%, 100% { box-shadow: 0 8px 24px rgba(0, 0, 0, .35), 0 0 0 4px rgba(255, 255, 255, .85) inset, 0 0 0 0 rgba(233, 30, 99, .6); }
-    50%      { box-shadow: 0 8px 24px rgba(0, 0, 0, .35), 0 0 0 4px rgba(255, 255, 255, .85) inset, 0 0 0 18px rgba(233, 30, 99, 0); }
+    0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,.4), 0 0 0 4px rgba(255,255,255,.85) inset, 0 0 0 0  rgba(233,30,99,.6); }
+    50%      { box-shadow: 0 8px 24px rgba(0,0,0,.4), 0 0 0 4px rgba(255,255,255,.85) inset, 0 0 0 18px rgba(233,30,99,0); }
   }
 
-  /* Toast de cargando si la imagen no está */
+  /* Toast si falla la carga */
   .missing {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 1.2rem; opacity: .7;
+    color: #fff; font-size: 1rem; opacity: .8;
     background: repeating-linear-gradient(45deg, #2b1633, #2b1633 10px, #341a3d 10px, #341a3d 20px);
   }
 </style>
 </head>
-<body>
+<body data-scene="1">
+
+<button class="back" data-back aria-label="Atrás">← Atrás</button>
 
 <div class="stage" id="stage">
 
   <!-- 1. ¿QUÉ QUIERES? — botones REGALO 1 / REGALO 2 -->
-  <div class="scene" id="scene-1" data-img="img/1-pregunta.jpg">
-    <button class="hotspot" data-go="2"
-            style="left:14%;top:62%;width:32%;height:14%;"
-            aria-label="Regalo 1"></button>
-    <button class="hotspot" data-go="4"
-            style="left:54%;top:62%;width:32%;height:14%;"
-            aria-label="Regalo 2"></button>
+  <div class="scene" id="scene-1">
+    <div class="canvas" data-img="img/1-pregunta.jpg">
+      <button class="hotspot" data-go="2"
+              style="left:13%;top:65%;width:32%;height:14%;"
+              aria-label="Regalo 1"></button>
+      <button class="hotspot" data-go="4"
+              style="left:55%;top:65%;width:32%;height:14%;"
+              aria-label="Regalo 2"></button>
+    </div>
   </div>
 
-  <!-- 2. RAMO DE ROSAS — botón CONFIRMAR -->
-  <div class="scene" id="scene-2" data-img="img/2-ramo.jpg">
-    <button class="back" data-back>← Atrás</button>
-    <button class="hotspot" data-go="3"
-            style="left:36%;top:66%;width:28%;height:12%;"
-            aria-label="Confirmar"></button>
+  <!-- 2. RAMO DE ROSAS — CONFIRMAR -->
+  <div class="scene" id="scene-2">
+    <div class="canvas" data-img="img/2-ramo.jpg">
+      <button class="hotspot" data-go="3"
+              style="left:36%;top:67%;width:28%;height:12%;"
+              aria-label="Confirmar"></button>
+    </div>
   </div>
 
   <!-- 3. MENTIRA, ESTE SÍ ES TU REGALO — toca para continuar -->
-  <div class="scene" id="scene-3" data-img="img/3-mentira.jpg">
-    <button class="back" data-back>← Atrás</button>
-    <button class="hotspot" data-go="6" data-label="PULSA PARA VER TU REGALO"
-            style="left:10%;top:32%;width:80%;height:55%;"
-            aria-label="Continuar"></button>
+  <div class="scene" id="scene-3">
+    <div class="canvas" data-img="img/3-mentira.jpg">
+      <button class="hotspot" data-go="6"
+              style="left:10%;top:30%;width:80%;height:55%;"
+              aria-label="Continuar">PULSA PARA VER TU REGALO</button>
+    </div>
   </div>
 
-  <!-- 4. 2 SEMANAS BALNEARIO — botón CONFIRMAR -->
-  <div class="scene" id="scene-4" data-img="img/4-balneario.jpg">
-    <button class="back" data-back>← Atrás</button>
-    <button class="hotspot" data-go="5"
-            style="left:36%;top:70%;width:28%;height:12%;"
-            aria-label="Confirmar"></button>
+  <!-- 4. 2 SEMANAS BALNEARIO — CONFIRMAR -->
+  <div class="scene" id="scene-4">
+    <div class="canvas" data-img="img/4-balneario.jpg">
+      <button class="hotspot" data-go="5"
+              style="left:36%;top:71%;width:28%;height:11%;"
+              aria-label="Confirmar"></button>
+    </div>
   </div>
 
   <!-- 5. LO SIENTO, PRESUPUESTO — toca para continuar -->
-  <div class="scene" id="scene-5" data-img="img/5-presupuesto.jpg">
-    <button class="back" data-back>← Atrás</button>
-    <button class="hotspot" data-go="6" data-label="PULSA PARA VER TU REGALO"
-            style="left:10%;top:32%;width:80%;height:55%;"
-            aria-label="Continuar"></button>
+  <div class="scene" id="scene-5">
+    <div class="canvas" data-img="img/5-presupuesto.jpg">
+      <button class="hotspot" data-go="6"
+              style="left:10%;top:30%;width:80%;height:55%;"
+              aria-label="Continuar">PULSA PARA VER TU REGALO</button>
+    </div>
   </div>
 
-  <!-- 6. MIRA EN EL CAJÓN — final con botones Atrás + Volver a empezar -->
-  <div class="scene" id="scene-6" data-img="img/6-cajon.jpg">
-    <button class="back" data-back>← Atrás</button>
-    <button class="restart" data-go="1">Volver a empezar</button>
+  <!-- 6. MIRA EN EL CAJÓN — final con Volver a empezar -->
+  <div class="scene" id="scene-6">
+    <div class="canvas" data-img="img/6-cajon.jpg">
+      <button class="restart" data-go="1">Volver a empezar</button>
+    </div>
   </div>
 
 </div>
 
 <script>
-  // Pila de navegación para el botón Atrás
   const history = [];
 
-  // Asigna background-image a cada escena y detecta si falta el archivo
-  document.querySelectorAll('.scene[data-img]').forEach(el => {
+  // Background-image con detección de error
+  document.querySelectorAll('.canvas[data-img]').forEach(el => {
     const src = el.dataset.img;
     const probe = new Image();
     probe.onload  = () => { el.style.backgroundImage = `url("${src}")`; };
@@ -202,12 +216,10 @@
     probe.src = src;
   });
 
-  // Navegación entre escenas (push history)
   function show(n, opts = {}) {
-    const current = document.querySelector('.scene.active');
-    if (current && !opts.skipHistory) {
-      const id = current.id.replace('scene-', '');
-      // Si volvemos a la 1, vaciamos el historial
+    const cur = document.querySelector('.scene.active');
+    if (cur && !opts.skipHistory) {
+      const id = cur.id.replace('scene-', '');
       if (n === '1' || n === 1) {
         history.length = 0;
       } else if (id !== String(n)) {
@@ -217,10 +229,10 @@
     document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
     const next = document.getElementById('scene-' + n);
     if (next) next.classList.add('active');
+    document.body.dataset.scene = String(n);
     window.scrollTo(0, 0);
   }
 
-  // Click en hotspots / botones con data-go
   document.querySelectorAll('[data-go]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
@@ -228,23 +240,17 @@
     });
   });
 
-  // Click en botones Atrás
   document.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
       const prev = history.pop();
-      if (prev) {
-        show(prev, { skipHistory: true });
-      } else {
-        show('1', { skipHistory: true });
-      }
+      show(prev || '1', { skipHistory: true });
     });
   });
 
-  // Empieza en la escena 1
   show(1, { skipHistory: true });
 
-  // Pre-carga el resto de imágenes para que las transiciones sean instantáneas
+  // Pre-carga
   ['img/2-ramo.jpg','img/3-mentira.jpg','img/4-balneario.jpg','img/5-presupuesto.jpg','img/6-cajon.jpg']
     .forEach(src => { const i = new Image(); i.src = src; });
 </script>
