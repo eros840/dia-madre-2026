@@ -76,6 +76,17 @@
     0%, 100% { box-shadow: 0 0 0 3px rgba(233,30,99,.55), 0 0 0 0 rgba(233,30,99,.55), 0 6px 18px rgba(0,0,0,.35); }
     50%      { box-shadow: 0 0 0 3px rgba(233,30,99,.55), 0 0 0 14px rgba(233,30,99,0),    0 6px 18px rgba(0,0,0,.35); }
   }
+  /* Variante invisible: el botón está dibujado en la imagen, el hotspot solo es zona clickable */
+  .hotspot.invisible {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    animation: none;
+    color: transparent;
+    text-shadow: none;
+  }
+  .hotspot.invisible:hover  { background: rgba(255,255,255,.08); }
+  .hotspot.invisible:active { background: rgba(255,255,255,.18); transform: scale(.97); }
 
   /* Botón "Atrás" — fijo arriba a la izquierda, sobre fondo */
   .back {
@@ -163,12 +174,12 @@
     </div>
   </div>
 
-  <!-- 3. MENTIRA, ESTE SÍ ES TU REGALO — pasa al balneario (NO al cajón) -->
+  <!-- 3. MENTIRA, ESTE SÍ ES TU REGALO — el botón "¡Pincha aquí!" está dibujado en la imagen -->
   <div class="scene" id="scene-3">
     <div class="canvas" data-img="img/3-mentira.jpg">
-      <button class="hotspot" data-go="4"
-              style="left:10%;top:30%;width:80%;height:55%;"
-              aria-label="Continuar">PULSA PARA VER TU REGALO</button>
+      <button class="hotspot invisible" data-go="4"
+              style="left:6%;top:62%;width:88%;height:32%;"
+              aria-label="Continuar"></button>
     </div>
   </div>
 
@@ -181,12 +192,12 @@
     </div>
   </div>
 
-  <!-- 5. LO SIENTO, PRESUPUESTO — toca para continuar -->
+  <!-- 5. LO SIENTO, PRESUPUESTO — el botón "¡Pincha aquí!" está dibujado en la imagen -->
   <div class="scene" id="scene-5">
     <div class="canvas" data-img="img/5-presupuesto.jpg">
-      <button class="hotspot" data-go="6"
-              style="left:10%;top:30%;width:80%;height:55%;"
-              aria-label="Continuar">PULSA PARA VER TU REGALO</button>
+      <button class="hotspot invisible" data-go="6"
+              style="left:6%;top:65%;width:88%;height:30%;"
+              aria-label="Continuar"></button>
     </div>
   </div>
 
